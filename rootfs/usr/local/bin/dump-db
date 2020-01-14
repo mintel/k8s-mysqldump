@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+[[ -z $TRACE ]] || set -x
+
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "./common.include"
+
+# Check environment
+[[ -z $BUCKET_NAME ]] && die "BUCKET_NAME must be set"
+[[ -z $BUCKET_CREDENTIALS ]] && die "BUCKET_CREDENTIALS must be set"
+[[ -z $DB_HOST ]] && die "DB_HOST must be set"
+[[ -z $DB_NAME ]] && die "DB_NAME must be set"
+[[ -z $DB_PASSWORD ]] && die "DB_PASSWORD must be set"
+[[ -z $DB_USER ]] && die "DB_USER must be set"
+
+readarray -t
+
+function dump() {
+  local args && args="$@"
+  mysqldump --user="${DB_USER}" --password="${DB_PASSWORD}" --host="${DB_HOST}" --single-transaction "${DB_NAME}" $args
+}
+
+if [[ -z $TABLE_FILE ]]; then
+  dump > /data/"${DB_NAME}".sql
+else
+  readarray -t tables
+  dump --tables ${tables[@]}
