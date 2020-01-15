@@ -16,10 +16,13 @@ source "./common.include"
 [[ -z $DB_PASSWORD ]] && die "DB_PASSWORD must be set"
 [[ -z $DB_USER ]] && die "DB_USER must be set"
 
-readarray -t
-
 function dump() {
-  mysqldump --user="${DB_USER}" --password="${DB_PASSWORD}" --host="${DB_HOST}" --single-transaction "${DB_NAME}" "$@" > /data/"${DB_NAME}".sql
+  mysqldump --host="${DB_HOST}" \
+            --user="${DB_USER}" \
+            --password="${DB_PASSWORD}" \
+            --single-transaction \
+            --add-drop-table \
+            "${DB_NAME}" "$@" > /data/"${DB_NAME}".sql
 }
 
 if [[ -z $TABLE_FILE ]]; then
