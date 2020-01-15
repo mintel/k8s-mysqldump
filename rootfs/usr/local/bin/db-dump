@@ -19,12 +19,14 @@ source "./common.include"
 readarray -t
 
 function dump() {
-  local args && args="$@"
-  mysqldump --user="${DB_USER}" --password="${DB_PASSWORD}" --host="${DB_HOST}" --single-transaction "${DB_NAME}" $args
+  mysqldump --user="${DB_USER}" --password="${DB_PASSWORD}" --host="${DB_HOST}" --single-transaction "${DB_NAME}" "$@" > /data/"${DB_NAME}".sql
 }
 
 if [[ -z $TABLE_FILE ]]; then
-  dump > /data/"${DB_NAME}".sql
+  echo "No table file specified. Dumping all tables."
+  dump
 else
-  readarray -t tables
-  dump --tables ${tables[@]}
+  echo "Table file specified. Dumping selected tables."
+  readarray -t tables < "$TABLE_FILE"
+  dump --tables "${tables[@]}"
+fi

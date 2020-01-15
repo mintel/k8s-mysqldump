@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+
+  cloudsql-proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.15
+    entrypoint: ['/cloud_sql_proxy']
+    command:
+    - -instances=${DB_CONNECTION_STRING}=tcp:0.0.0.0:3306
+    - -credential_file=/secrets/cloudsql/credentials.json
+    - -dir=/cloudsql
+    volumes:
+    - ./private/credentials/cloudsql-credentials.json:/secrets/cloudsql/credentials.json
+
+  mysqldump:
+    build: .
+    entrypoint: ['/usr/local/bin/db-dump']
+    env_file:
+      - .env
+    volumes:
+    - ./private/credentials/bucket-credentials.json:/secrets/bucket/credentials.json
+    - ./private/tables.txt:/config/tables.txt
+    - ./private/data:/data
+    depends_on:
+      - cloudsql-proxy

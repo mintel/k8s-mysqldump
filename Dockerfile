@@ -21,11 +21,11 @@ ENV BUCKET_NAME \
     DB_NAME \
     DB_PASSWORD \
     DB_USER \
-    TABLE_FILE \
+    TABLE_FILE
 
 RUN apk update \
   && apk --no-cache upgrade \
-  && apk --no-cache add bash ca-certificates coreutils mysql-client \
+  && apk --no-cache add bash ca-certificates coreutils mysql-client wget \
   && wget -O /usr/local/share/ca-certificates/fakelerootx1.crt https://letsencrypt.org/certs/fakelerootx1.pem \
   && wget -O /usr/local/share/ca-certificates/fakeleintermediatex1.crt https://letsencrypt.org/certs/fakeleintermediatex1.pem \
   && update-ca-certificates \
@@ -44,9 +44,9 @@ RUN wget -O /tmp/restic-${RESTIC_VERSION}.bz2 "https://github.com/restic/restic/
 # In case you want to run this as a Kubernetes Cronjob to make sure only one is running at any time add kubelock
 COPY --from=mintel/kubelock:0.1.0 /usr/local/bin/kubelock /usr/local/bin/
 
-COPY ./rootfs /
+RUN adduser -D -s /bin/bash mintel
 RUN mkdir /data && chmod 777 /data
 
-RUN adduser -D -s /bin/bash mintel
+COPY ./rootfs /
 
 USER mintel
