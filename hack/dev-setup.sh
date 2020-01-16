@@ -10,14 +10,21 @@ mkdir -p private/data
 
 if [[ ! -f .env ]]; then
   cat <<EOF > .env
-BUCKET_CREDENTIALS=/secrets/bucket/credentials.json
-CLOUDSQL_CREDENTIALS=/secrets/cloudsql/credentials.json
-BUCKET_NAME=
-DB_CONNECTION_STRING=
+# CLOUDSQL
+CLOUDSQL_GOOGLE_APPLICATION_CREDENTIALS=/secrets/cloudsql/credentials.json
+CLOUDSQL_CONNECTION_STRING=
+
+# DATABASE
 DB_HOST=cloudsql-proxy
 DB_NAME=
 DB_PASSWORD=
 DB_USER=
 TABLE_FILE=/config/tables.txt
+
+# RESTIC
+RESTIC_GOOGLE_APPLICATION_CREDENTIALS=/secrets/bucket/credentials.json
+RESTIC_GOOGLE_PROJECT_ID=
+RESTIC_PASSWORD=
+RESTIC_REPOSITORY=
 EOF
 fi

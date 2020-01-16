@@ -15,13 +15,15 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vendor="Mintel Group Ltd." \
       maintainer="Bobby Brockway <bbrockway@mintel.com>"
 
-ENV BUCKET_CREDENTIALS /secrets/bucket/credentials.json
-ENV BUCKET_NAME \
-    DB_HOST \
+ENV RESTIC_GOOGLE_APPLICATION_CREDENTIALS /secrets/bucket/credentials.json
+ENV TABLE_FILE /config/tables.txt
+ENV DB_HOST \
     DB_NAME \
     DB_PASSWORD \
     DB_USER \
-    TABLE_FILE
+    RESTIC_GOOGLE_PROJECT_ID \
+    RESTIC_PASSWORD \
+    RESTIC_REPOSITORY
 
 RUN apk update \
   && apk --no-cache upgrade \
@@ -50,3 +52,7 @@ RUN mkdir /data && chmod 777 /data
 COPY ./rootfs /
 
 USER mintel
+RUN mkdir -p ~/.config/backup/restic/repos \
+  && mkdir -p ~/.config/backup/restic/sets
+
+ENTRYPOINT ["/usr/local/bin/db-dump"]

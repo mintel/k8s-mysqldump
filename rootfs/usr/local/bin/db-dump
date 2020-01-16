@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -e
 set -o pipefail
@@ -9,21 +9,33 @@ cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "./common.include"
 
 # Check environment
-[[ -z $BUCKET_NAME ]] && die "BUCKET_NAME must be set"
-[[ -z $BUCKET_CREDENTIALS ]] && die "BUCKET_CREDENTIALS must be set"
 [[ -z $DB_HOST ]] && die "DB_HOST must be set"
 [[ -z $DB_NAME ]] && die "DB_NAME must be set"
 [[ -z $DB_PASSWORD ]] && die "DB_PASSWORD must be set"
 [[ -z $DB_USER ]] && die "DB_USER must be set"
+[[ -z $RESTIC_GOOGLE_APPLICATION_CREDENTIALS ]] && die "RESTIC_GOOGLE_APPLICATION_CREDENTIALS must be set"
+[[ -z $RESTIC_GOOGLE_PROJECT_ID ]] && die "RESTIC_GOOGLE_PROJECT_ID must be set"
+[[ -z $RESTIC_PASSWORD ]] && die "RESTIC_PASSWORD must be set"
+[[ -z $RESTIC_REPOSITORY ]] && die "RESTIC_REPOSITORY must be set"
 
+DUMP_FILE="/data/${DB_NAME}.sql"
+
+##################################################
+# Dump from MySQL instance to container storage  #
+##################################################
 function dump() {
   mysqldump --host="${DB_HOST}" \
             --user="${DB_USER}" \
             --password="${DB_PASSWORD}" \
             --single-transaction \
             --add-drop-table \
-            "${DB_NAME}" "$@" > /data/"${DB_NAME}".sql
+            "${DB_NAME}" "$@" > "${DUMP_FILE}"
 }
+
+while ! wget -qS -O- "$DB_HOST":3306 >/dev/null 2>&1; do
+  echo "Database not ready. Retrying..."
+  sleep 1
+done
 
 if [[ -z $TABLE_FILE ]]; then
   echo "No table file specified. Dumping all tables."
@@ -32,4 +44,33 @@ else
   echo "Table file specified. Dumping selected tables."
   readarray -t tables < "$TABLE_FILE"
   dump --tables "${tables[@]}"
+fi
+
+##################################################
+# Restic backup from container storage to bucket #
+##################################################
+export GOOGLE_APPLICATION_CREDENTIALS=${RESTIC_GOOGLE_APPLICATION_CREDENTIALS}
+export GOOGLE_PROJECT_ID=${RESTIC_GOOGLE_PROJECT_ID}
+
+## Initalize repository if is not already
+echo "Initializing Repo if required"
+restic-runner --repo repo command snapshots || restic-runner --repo repo init
+echo ""
+
+## Perform Restic Backup
+echo "Performing Backup for set on repo"
+restic-runner --repo repo --set set backup
+echo ""
+
+## Performing Expire of old snapshots
+echo "Performing Expire for repo"
+restic-runner --repo repo expire 
+echo ""
+
+## Performing a regular check of data integrity
+## Since this is an expensive operatorion only run it in 10% of execution of this command
+if [[ $((1 + RANDOM % 10)) -eq 10 ]]; then
+  echo "Performing Check for repo"
+  restic-runner --repo repo check
+  echo ""
 fi

@@ -6,7 +6,7 @@ services:
     image: gcr.io/cloudsql-docker/gce-proxy:1.15
     entrypoint: ['/cloud_sql_proxy']
     command:
-    - -instances=${DB_CONNECTION_STRING}=tcp:0.0.0.0:3306
+    - -instances=${CLOUDSQL_CONNECTION_STRING}=tcp:0.0.0.0:3306
     - -credential_file=/secrets/cloudsql/credentials.json
     - -dir=/cloudsql
     volumes:
@@ -15,11 +15,12 @@ services:
   mysqldump:
     build: .
     entrypoint: ['/usr/local/bin/db-dump']
+    #entrypoint: ['sleep', '9999']
     env_file:
       - .env
     volumes:
     - ./private/credentials/bucket-credentials.json:/secrets/bucket/credentials.json
     - ./private/tables.txt:/config/tables.txt
     - ./private/data:/data
-    depends_on:
-      - cloudsql-proxy
+    - ./private/repos:/home/mintel/.config/backup/restic/repos
+    - ./private/sets:/home/mintel/.config/backup/restic/sets
