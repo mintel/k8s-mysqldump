@@ -46,13 +46,13 @@ RUN wget -O /tmp/restic-${RESTIC_VERSION}.bz2 "https://github.com/restic/restic/
 # In case you want to run this as a Kubernetes Cronjob to make sure only one is running at any time add kubelock
 COPY --from=mintel/kubelock:0.1.0 /usr/local/bin/kubelock /usr/local/bin/
 
-RUN adduser -D -s /bin/bash mintel
+RUN adduser -D -s /bin/bash -u 1000 mintel
 RUN mkdir /data && chmod 777 /data
 
 COPY ./rootfs /
 
-USER mintel
-RUN mkdir -p ~/.config/backup/restic/repos \
-  && mkdir -p ~/.config/backup/restic/sets
+USER 1000
+RUN mkdir -p /home/mintel/.config/backup/restic/repos \
+  && mkdir -p /home/mintel/.config/backup/restic/sets
 
 ENTRYPOINT ["/usr/local/bin/db-dump"]

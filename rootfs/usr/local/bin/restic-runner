@@ -19,7 +19,6 @@
 # keep_policy: An array of "--keep-period N" strings (unquoted in the array)
 
 # * Defaults
-
 config_dir=${RESTIC_RUNNER_CONFIG_DIR:-$HOME/.config/backup/restic}
 errors=0
 

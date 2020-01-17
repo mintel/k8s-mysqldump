@@ -17,6 +17,8 @@ source "./common.include"
 [[ -z $RESTIC_GOOGLE_PROJECT_ID ]] && die "RESTIC_GOOGLE_PROJECT_ID must be set"
 [[ -z $RESTIC_PASSWORD ]] && die "RESTIC_PASSWORD must be set"
 [[ -z $RESTIC_REPOSITORY ]] && die "RESTIC_REPOSITORY must be set"
+[[ -z $RESTIC_RUNNER_REPO ]] && die "RESTIC_RUNNER_REPO must be set"
+[[ -z $RESTIC_RUNNER_SET ]] && die "RESTIC_RUNNER_SET must be set"
 
 DUMP_FILE="/data/${DB_NAME}.sql"
 
@@ -54,23 +56,23 @@ export GOOGLE_PROJECT_ID=${RESTIC_GOOGLE_PROJECT_ID}
 
 ## Initalize repository if is not already
 echo "Initializing Repo if required"
-restic-runner --repo repo command snapshots || restic-runner --repo repo init
+restic-runner --repo "$RESTIC_RUNNER_REPO" command snapshots || restic-runner --repo "$RESTIC_RUNNER_REPO" init
 echo ""
 
 ## Perform Restic Backup
 echo "Performing Backup for set on repo"
-restic-runner --repo repo --set set backup
+restic-runner --repo "$RESTIC_RUNNER_REPO" --set "$RESTIC_RUNNER_SET" backup
 echo ""
 
 ## Performing Expire of old snapshots
 echo "Performing Expire for repo"
-restic-runner --repo repo expire 
+restic-runner --repo "$RESTIC_RUNNER_REPO" expire
 echo ""
 
 ## Performing a regular check of data integrity
 ## Since this is an expensive operatorion only run it in 10% of execution of this command
 if [[ $((1 + RANDOM % 10)) -eq 10 ]]; then
   echo "Performing Check for repo"
-  restic-runner --repo repo check
+  restic-runner --repo "$RESTIC_RUNNER_REPO" check
   echo ""
 fi
