@@ -44,8 +44,7 @@ RUN wget -O /tmp/restic-${RESTIC_VERSION}.bz2 "https://github.com/restic/restic/
   && chmod a+x /usr/local/bin/restic
 
 # Copy in kubelock and vault-env
-COPY --from=mintel/kubelock:0.1.0 /usr/local/bin/kubelock /usr/local/bin/
-COPY --from=banzaicloud/vault-env:0.7.1 /usr/local/bin/vault-env /usr/local/bin/
+COPY --from=mintel/satoshi-devtools:1.0.0 /usr/local/bin/* /usr/local/bin/
 
 RUN adduser -D -s /bin/bash -u 1000 mintel
 RUN mkdir /data && chmod 777 /data
