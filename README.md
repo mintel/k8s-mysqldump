@@ -9,6 +9,12 @@ An image for pulling dumps from a mysql database and pushing them to a Google bu
 * A Google bucket into which dumps will be copied.
 * A Google service account with the correct read-write permissions to the bucket.
 
+### Google Authentication
+
+If an ENVironemnt variable named `RESTIC_GOOGLE_APPLICATION_CREDENTIALS` is specified pointing to a credentials.json file then it will be used to authenticate. 
+
+Otherwise the standard [Application Default Credentials](https://cloud.google.com/docs/authentication/production) will be used, including support for Workload Identity
+
 ### Environment Variables
 
 | Variable Name | Description | Default |
