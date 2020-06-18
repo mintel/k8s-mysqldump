@@ -15,12 +15,12 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vendor="Mintel Group Ltd." \
       maintainer="Bobby Brockway <bbrockway@mintel.com>"
 
-ENV RESTIC_GOOGLE_APPLICATION_CREDENTIALS /secrets/bucket/credentials.json
 ENV TABLE_FILE /config/tables.txt
 ENV DB_HOST \
     DB_NAME \
     DB_PASSWORD \
     DB_USER \
+    RESTIC_GOOGLE_APPLICATION_CREDENTIALS \
     RESTIC_GOOGLE_PROJECT_ID \
     RESTIC_PASSWORD \
     RESTIC_REPOSITORY

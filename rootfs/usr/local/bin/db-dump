@@ -13,8 +13,6 @@ source "./common.include"
 [[ -z $DB_NAME ]] && die "DB_NAME must be set"
 [[ -z $DB_PASSWORD ]] && die "DB_PASSWORD must be set"
 [[ -z $DB_USER ]] && die "DB_USER must be set"
-[[ -z $RESTIC_GOOGLE_APPLICATION_CREDENTIALS ]] && die "RESTIC_GOOGLE_APPLICATION_CREDENTIALS must be set"
-[[ -z $RESTIC_GOOGLE_PROJECT_ID ]] && die "RESTIC_GOOGLE_PROJECT_ID must be set"
 [[ -z $RESTIC_PASSWORD ]] && die "RESTIC_PASSWORD must be set"
 [[ -z $RESTIC_REPOSITORY ]] && die "RESTIC_REPOSITORY must be set"
 [[ -z $RESTIC_RUNNER_REPO ]] && die "RESTIC_RUNNER_REPO must be set"
@@ -51,8 +49,29 @@ fi
 ##################################################
 # Restic backup from container storage to bucket #
 ##################################################
-export GOOGLE_APPLICATION_CREDENTIALS=${RESTIC_GOOGLE_APPLICATION_CREDENTIALS}
-export GOOGLE_PROJECT_ID=${RESTIC_GOOGLE_PROJECT_ID}
+if [[ -z $RESTIC_GOOGLE_APPLICATION_CREDENTIALS ]]; then 
+  echo "Using Google Application Default Credentials to authenticate with GCP"
+else
+  echo "Using $RESTIC_GOOGLE_APPLICATION_CREDENTIALS to authenticate with GCP"
+  export GOOGLE_APPLICATION_CREDENTIALS=${RESTIC_GOOGLE_APPLICATION_CREDENTIALS}
+fi
+
+if [[ -z $RESTIC_GOOGLE_PROJECT_ID ]]; then 
+  METADATA_GOOGLE_PROJECT_ID=$(wget --header "Metadata-Flavor: Google"  http://metadata.google.internal/computeMetadata/v1/project/project-id -O- 2>/dev/null)
+  if [[ $? -ne 0 ]]; then
+    echo "Failed to fetch google project id from metadata"
+    exit 1
+  elif [[ "x$METADATA_GOOGLE_PROJECT_ID" == "x" ]]; then
+    echo "Failed to fetch google project id from metadata"
+    exit 1
+  else
+    echo "Using $METADATA_GOOGLE_PROJECT_ID project id from metadata"
+    export GOOGLE_PROJECT_ID=${METADATA_GOOGLE_PROJECT_ID}
+  fi
+else
+  echo "Using $RESTIC_GOOGLE_PROJECT_ID from environment"
+  export GOOGLE_PROJECT_ID=${RESTIC_GOOGLE_PROJECT_ID}
+fi
 
 ## Initalize repository if is not already
 echo "Initializing Repo if required"
