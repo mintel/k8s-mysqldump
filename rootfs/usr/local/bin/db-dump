@@ -61,7 +61,7 @@ if [[ -z $RESTIC_GOOGLE_PROJECT_ID ]]; then
   if [[ $? -ne 0 ]]; then
     echo "Failed to fetch google project id from metadata"
     exit 1
-  elif [[ "x$METADATA_GOOGLE_PROJECT_ID" == "x" ]]
+  elif [[ "x$METADATA_GOOGLE_PROJECT_ID" == "x" ]]; then
     echo "Failed to fetch google project id from metadata"
     exit 1
   else
